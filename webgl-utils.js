@@ -6,23 +6,29 @@
  * It intentionally doesn't support anything that wouldn't work with used syntax.
  * @type {Object}
  * @author Milan Košťák
- * @version 2.0 (2017)
+ * @version 2.1 (03/2019)
  * @requires transforms3d.js
  */
-var Utils = {};
+const Utils = {};
+
+Utils.WebGL1 = "experimental-webgl";
+Utils.WebGL2 = "webgl2";
 
 /**
  * Initialization of WebGL
- * @param  {HTMLCanvasElement} canvas to draw on
- * @param  {Object} args optional parameter containing arguments for WebGL initialization
- * @return {WebGLRenderingContext} WebGL context
+ * @param  {HTMLCanvasElement} canvas canvas to draw on
+ * @param  {string} version           WebGL version to be initialized, since 2.1
+ * @param  {Object} args              optional parameter containing arguments for WebGL initialization
+ * @return {WebGLRenderingContext}    WebGL context
  */
-Utils.initWebGL = function(canvas, args) {
+Utils.initWebGL = function(canvas, version, args) {
 	let gl;
 	try {
-		gl = canvas.getContext("experimental-webgl", args);
+		if (!version) version = Utils.WebGL1;
+		gl = canvas.getContext(version, args);
+	} catch(e) {
+		console.log(e);
 	}
-	catch(e) {}
 	if (!gl) {
 		window.alert("Initialization of WebGL was not successful. Your browser probably doesn't support it.");
 		return false;
@@ -50,21 +56,36 @@ Utils.initRequestAnimationFrame = function(fps) {
  * Function for initialization of shaders
  * @param  {WebGLRenderingContext} gl WebGL context
  * @param  {WebGLProgram} program     WebGL program
- * @param  {string} vsId              id of element which is containing vertex shader
- * @param  {string} fsId              id of element which is containing fragment shader
+ * @param  {string} vsId              id of an element that contains vertex shader
+ * @param  {string} fsId              id of an element that contains fragment shader
+ * @param  {boolean} file             true/false if shaders should be loaded from file, since 2.1
  * @return {boolean}                  true if compilation was successful else it throws exception
  * @throws {SyntaxError}              If compilation of shaders failed or shaders were not found
  */
-Utils.initShaders = function(gl, program, vsId, fsId) {
-	let initShader = function(id, type) {
+Utils.initShaders = function(gl, program, vsId, fsId, file) {
+	let initShader = function(id, type, file) {
 		let shader = gl.createShader(type);
 		let value;
-		try {
-			value = document.getElementById(id).firstChild.nodeValue;
-		} catch (e) {
+		if (file) {
+			let request = new XMLHttpRequest();
+			request.open('GET', id, false);
+			try {
+				request.send(null);
+				if (request.readyState === 4 && request.status === 200) {
+					value = request.responseText;
+				}
+			} catch (e) {}
+		} else {
+			try {
+				value = document.getElementById(id).firstChild.nodeValue;
+			} catch (e) {}
+		}
+		if (!value) {
 			let x = "Utils.initShaders: ";
 			x += (type === gl.VERTEX_SHADER) ? "Vertex" : "Fragment";
-			x += " shader was not found!";
+			x += " shader was not found! Requested ";
+			x += (file) ? "file" : "element";
+			x += " '" + id + "' was not found."
 			window.alert(x);
 			throw new Error(x);
 		}
@@ -83,7 +104,7 @@ Utils.initShaders = function(gl, program, vsId, fsId) {
 		}
 	};
 	// check FS even if VS compilation failed (so it shows errors for both at once)
-	let result = (initShader(vsId, gl.VERTEX_SHADER)) & (initShader(fsId, gl.FRAGMENT_SHADER));
+	let result = (initShader(vsId, gl.VERTEX_SHADER, file)) & (initShader(fsId, gl.FRAGMENT_SHADER, file));
 	if (!result) {
 		throw new SyntaxError("Shader syntax error.");
 	} else {
@@ -805,9 +826,21 @@ Utils.Sphere.prototype.createIndices = function(precision, strip) {
 /**
  * Function for loading data from JSON file with AJAX
  * @param  {string}   url      address of file
- * @param  {Function} callback function to call after loading is complete; called with received data
+ * @param  {Function} callback function to call after loading is complete; called with parsed JSON
  */
 Utils.getDataFromJSON = function(url, callback) {
+	Utils.getDataFromFile(url, (text) => {
+		callback(JSON.parse(text));
+	});
+};
+
+/**
+ * Function for loading data from text file with AJAX
+ * @param  {string}   url      address of file
+ * @param  {Function} callback function to call after loading is complete; called with received data
+ * @since 2.1
+ */
+Utils.getDataFromFile = function(url, callback) {
 	var _404 = false,
 		unknown_error = false,
 		http_request = new XMLHttpRequest();
@@ -821,7 +854,7 @@ Utils.getDataFromJSON = function(url, callback) {
 			// 3	LOADING Downloading; responseText holds partial data.
 			// 4	DONE The operation is complete.
 		if (http_request.readyState === 4 && http_request.status === 200) {
-			callback(JSON.parse(http_request.responseText));
+			callback(http_request.responseText);
 		} else if (http_request.status === 404) {
 			if (!_404) window.alert("File \""+url+"\" was not found (404)!");
 			_404 = true;
