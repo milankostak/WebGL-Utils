@@ -6,7 +6,7 @@
  * It intentionally doesn't support anything that wouldn't work with used syntax.
  * @type {Object}
  * @author Milan Košťák
- * @version 2.1 (03/2019)
+ * @version 2.1.1 (2020/03/01)
  * @requires transforms3d.js
  */
 const Utils = {};
@@ -47,7 +47,8 @@ Utils.initRequestAnimationFrame = function(fps) {
 			window.setTimeout(callback, 1000/fps);
 		};
 	} else {
-		// Edge 12+, FF 23+, Chrome 24+, Opera 15+, Safari 6.1+
+		// IE10+, Edge 12+, FF 23+, Chrome 24+, Opera 15+, Safari 6.1+
+		// https://caniuse.com/#feat=requestanimationframe
 		window.requestAnimFrame = window.requestAnimationFrame;
 	}
 };
@@ -85,7 +86,7 @@ Utils.initShaders = function(gl, program, vsId, fsId, file) {
 			x += (type === gl.VERTEX_SHADER) ? "Vertex" : "Fragment";
 			x += " shader was not found! Requested ";
 			x += (file) ? "file" : "element";
-			x += " '" + id + "' was not found."
+			x += " '" + id + "' was not found.";
 			window.alert(x);
 			throw new Error(x);
 		}
@@ -942,7 +943,8 @@ Utils.initFullscreen = function(element, startFullscreen, exitFullscreen) {
 	document.addEventListener("fullscreenchange", fullscreenChange, false);
 	document.addEventListener("mozfullscreenchange", fullscreenChange, false);
 	document.addEventListener("webkitfullscreenchange", fullscreenChange, false);
-	//http://msdn.microsoft.com/en-us/library/ie/dn265028(v=vs.85).aspx
+	// http://msdn.microsoft.com/en-us/library/ie/dn265028(v=vs.85).aspx
+	// https://caniuse.com/#feat=fullscreen
 
 	element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.webkitRequestFullscreen;
 };
@@ -950,12 +952,13 @@ Utils.initFullscreen = function(element, startFullscreen, exitFullscreen) {
 /**
  * Preparation cursor locking on given element
  * @see {@link https://developer.mozilla.org/en-US/docs/WebAPI/Pointer_Lock}
- * @param  {HTMLElement} element      element, which is going to have locked cursor
- * @param  {Function} startFullscreen function to call on successful locking cursor
- * @param  {Function} exitFullscreen  function to call when cursor has been unlocked
+ * @param  {HTMLElement} element       element, which is going to have locked cursor
+ * @param  {Function} startPointerLock function to call on successful locking cursor
+ * @param  {Function} exitPointerLock  function to call when cursor has been unlocked
  */
 Utils.initPointerLock = function(element, startPointerLock, exitPointerLock) {
-	// Edge 13+, FF 41+, Chrome 37+, Opera 24+, Safari ne
+	// Edge 13+, FF 41+, Chrome 37+, Opera 24+, Safari 10.1+
+	// https://caniuse.com/#feat=pointerlock
 
 	function pointerLockChange() {
 		if (document.pointerLockElement === element) {
@@ -967,11 +970,9 @@ Utils.initPointerLock = function(element, startPointerLock, exitPointerLock) {
 
 	document.addEventListener("pointerlockchange", pointerLockChange, false);
 
-	function pointerLockError() {
+	document.addEventListener("pointerlockerror", () => {
 		window.console.log("Pointer lock failed.");
-	}
-
-	document.addEventListener("pointerlockerror", pointerLockError, false);
+	}, false);
 };
 
 /**
