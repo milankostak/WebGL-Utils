@@ -6,7 +6,7 @@
  * It intentionally doesn't support anything that wouldn't work with used syntax.
  * @type {Object}
  * @author Milan Košťák
- * @version 2.1.2 (2020/03/08)
+ * @version 2.1.3 (2020/03/08)
  * @requires transforms.js
  */
 const Utils = {};
@@ -16,10 +16,10 @@ Utils.WebGL2 = "webgl2";
 
 /**
  * Initialization of WebGL
- * @param  {HTMLCanvasElement} canvas canvas to draw on
- * @param  {string} version           WebGL version to be initialized, since 2.1
- * @param  {Object} args              optional parameter containing arguments for WebGL initialization
- * @return {WebGLRenderingContext}    WebGL context
+ * @param  {HTMLCanvasElement}              canvas canvas to draw on
+ * @param  {string} version                 WebGL version to be initialized, since 2.1
+ * @param  {Object} args                    optional parameter containing arguments for WebGL initialization
+ * @return {WebGLRenderingContext,boolean}  WebGL context or false if error occurs
  */
 Utils.initWebGL = function(canvas, version, args) {
 	let gl;
@@ -44,7 +44,7 @@ Utils.initWebGL = function(canvas, version, args) {
 Utils.initRequestAnimationFrame = function(fps) {
 	if (typeof fps === "number") {
 		window.requestAnimFrame = function(callback) {
-			window.setTimeout(callback, 1000/fps);
+			window.setTimeout(callback, 1000 / fps);
 		};
 	} else {
 		// IE10+, Edge 12+, FF 23+, Chrome 24+, Opera 15+, Safari 6.1+
@@ -153,7 +153,7 @@ Utils.getWheelRotation = function(e) {
  * @param {Function} callback with actual listener
  */
 Utils.addMouseWheelListener = function(element, callback) {
-	// https://developer.mozilla.org/en-US/docs/Web/Events/wheel#Browser_compatibility
+	// https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event#Browser_compatibility
 	element.addEventListener("wheel", callback, false);
 };
 
@@ -173,8 +173,8 @@ Utils.distance = function(x, y, x2, y2) {
 
 /**
  * Function for converting matrix or vector into Float32Array
- * @param  {various} a    Vec1D / Vec2D / Vec3D / Point3D / Mat3 / Mat4
- * @return {Float32Array} flat array with values from parameter
+ * @param  {Vec1D,Vec2D,Vec3D,Point3D,Mat3,Mat4} a
+ * @return {Float32Array} flat array with values from the parameter
  */
 Utils.convert = function(a) {
 	if (a instanceof Vec1D) {
@@ -219,7 +219,7 @@ Utils.Scene = function() {
 
 /**
  * Adding an object to the scene
- * @param {various} obj an object to add (Block, Face, Sphere)
+ * @param {Block,Face,Sphere} obj an object to add
  */
 Utils.Scene.prototype.add = function(obj) {
 	let length = this.vertices.length / 3;
@@ -679,7 +679,7 @@ Utils.Sphere.prototype.createVertices = function(pos, radius, precision) {
  * Generate colors for sphere
  * @param  {number} count   number of vertices the sphere has
  * @param  {Array} color    array with colors; ignored if (random === true)
- * @param  {boolean} random if color should be random for every vertice
+ * @param  {boolean} random if color should be random for every vertex
  * @return {Array}          array with colors
  */
 Utils.Sphere.prototype.createColors = function(count, color, random) {
@@ -915,7 +915,7 @@ Utils.loadTexture = function(gl, urls, callback) {
 
 /**
  * Preparation for switching to full screen
- * @see More info in specification: {@link https://dvcs.w3.org/hg/fullscreen/raw-file/tip/Overview.html}
+ * @see More info in specification: {@link https://fullscreen.spec.whatwg.org/}
  * @param  {HTMLElement} element      element which is going to be on full screen
  * @param  {Function} startFullscreen function to call when full screen entered
  * @param  {Function} exitFullscreen  function to call when full screen exited
@@ -943,7 +943,7 @@ Utils.initFullscreen = function(element, startFullscreen, exitFullscreen) {
 	document.addEventListener("fullscreenchange", fullscreenChange, false);
 	document.addEventListener("mozfullscreenchange", fullscreenChange, false);
 	document.addEventListener("webkitfullscreenchange", fullscreenChange, false);
-	// http://msdn.microsoft.com/en-us/library/ie/dn265028(v=vs.85).aspx
+	// https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/dev-guides/dn265028(v=vs.85)
 	// https://caniuse.com/#feat=fullscreen
 
 	element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.webkitRequestFullscreen;
@@ -951,13 +951,13 @@ Utils.initFullscreen = function(element, startFullscreen, exitFullscreen) {
 
 /**
  * Preparation of cursor locking on given element
- * @see {@link https://developer.mozilla.org/en-US/docs/WebAPI/Pointer_Lock}
  * @param  {HTMLElement} element       element which is going to have locked cursor
  * @param  {Function} startPointerLock function to call on successful locking cursor
  * @param  {Function} exitPointerLock  function to call when cursor has been unlocked
  */
 Utils.initPointerLock = function(element, startPointerLock, exitPointerLock) {
 	// Edge 13+, FF 41+, Chrome 37+, Opera 24+, Safari 10.1+
+	// https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
 	// https://caniuse.com/#feat=pointerlock
 
 	function pointerLockChange() {
@@ -1049,10 +1049,10 @@ Utils.Axis.init = function(gl) {
 /**
  * Draw axis. It has to be called after initialization.
  * @param  {WebGLRenderingContext} gl WebGL context
- * @param  {Float32Array} modelview   array of 16 items (originally 4x4 matrix)
+ * @param  {Float32Array} modelView   array of 16 items (originally 4x4 matrix)
  * @param  {Float32Array} projection  array of 16 items (originally 4x4 matrix)
  */
-Utils.Axis.draw = function(gl, modelview, projection) {
+Utils.Axis.draw = function(gl, modelView, projection) {
 	gl.useProgram(this.axisProgram);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.dataBuffer);
@@ -1060,7 +1060,7 @@ Utils.Axis.draw = function(gl, modelview, projection) {
 	gl.vertexAttribPointer(this.axisProgram.axisColor, 3, gl.FLOAT, false, this.stride, this.step * 3);
 
 	gl.uniformMatrix4fv(this.axisProgram.axisProjection, false, projection);
-	gl.uniformMatrix4fv(this.axisProgram.axisModelView, false, modelview);
+	gl.uniformMatrix4fv(this.axisProgram.axisModelView, false, modelView);
 
 	gl.drawArrays(gl.LINES, 0, 6);
 };
