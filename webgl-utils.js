@@ -1,13 +1,13 @@
 "use strict";
 
 /**
- * Utils object contains some useful functions for use with WebGL.
+ * Utils object contains useful functions for use with WebGL.
  * Minimum browser support (syntax-wise, NOT function-wise) (mainly because arrow functions): Edge 12+, Chrome 45+, FF 22+, Opera 32+, Safari 10
  * It intentionally doesn't support anything that wouldn't work with used syntax.
  * @type {Object}
  * @author Milan Košťák
- * @version 2.1.1 (2020/03/01)
- * @requires transforms3d.js
+ * @version 2.1.2 (2020/03/08)
+ * @requires transforms.js
  */
 const Utils = {};
 
@@ -158,7 +158,7 @@ Utils.addMouseWheelListener = function(element, callback) {
 };
 
 /**
- * Calculates distance of two points in 2D plane
+ * Calculates distance between two points in 2D plane
  * @param  {number} x  1st point
  * @param  {number} y  1st point
  * @param  {number} x2 2nd point
@@ -167,7 +167,7 @@ Utils.addMouseWheelListener = function(element, callback) {
  */
 Utils.distance = function(x, y, x2, y2) {
 	return Math.sqrt(
-		Math.pow((y2-y), 2) + Math.pow((x2-x), 2)
+		Math.pow((y2 - y), 2) + Math.pow((x2 - x), 2)
 	);
 };
 
@@ -189,7 +189,7 @@ Utils.convert = function(a) {
 		let temp = new Float32Array(9);
 		for (let i = 0; i < 3; i++) {
 			for (let j = 0; j < 3; j++) {
-				temp[i*3+j] = a.mat[i][j];
+				temp[i * 3 + j] = a.mat[i][j];
 			}
 		}
 		return temp;
@@ -197,7 +197,7 @@ Utils.convert = function(a) {
 		let temp = new Float32Array(16);
 		for (let i = 0; i < 4; i++) {
 			for (let j = 0; j < 4; j++) {
-				temp[i*4+j] = a.mat[i][j];
+				temp[i * 4 + j] = a.mat[i][j];
 			}
 		}
 		return temp;
@@ -222,7 +222,7 @@ Utils.Scene = function() {
  * @param {various} obj an object to add (Block, Face, Sphere)
  */
 Utils.Scene.prototype.add = function(obj) {
-	let length = this.vertices.length/3;
+	let length = this.vertices.length / 3;
 	this.vertices = this.vertices.concat(obj.vertices);
 	this.colors = this.colors.concat(obj.colors);
 	this.textureCoords = this.textureCoords.concat(obj.textureCoords).filter(n => n !== undefined);
@@ -230,7 +230,7 @@ Utils.Scene.prototype.add = function(obj) {
 	let b = obj.indices;
 
 	for (let i = 0; i < b.length; i++) {
-		b[i] = b[i]+length;
+		b[i] = b[i] + length;
 	}
 	this.indices = this.indices.concat(b);
 	return this;
@@ -643,7 +643,7 @@ Utils.Sphere = function(posx, posy, posz, radius, precision, args) {
 
 	let pos = new Vec3D(posx, posy, posz);
 	this.vertices = this.createVertices(pos, radius, precision);
-	this.colors = this.createColors(this.vertices.length/3, args.color, args.randomColor);
+	this.colors = this.createColors(this.vertices.length / 3, args.color, args.randomColor);
 	this.normals = this.createNormals(pos, this.vertices);
 	this.textureCoords = this.createTextureCoords(precision);
 	this.indices = this.createIndices(precision, args.strip);
@@ -657,15 +657,15 @@ Utils.Sphere = function(posx, posy, posz, radius, precision, args) {
  * @return {Array}            array with vertices
  */
 Utils.Sphere.prototype.createVertices = function(pos, radius, precision) {
-	let step = Math.PI/precision;
+	let step = Math.PI / precision;
 	let vertices = [];
 	let x, y, z;
-	for (let fi = 0, round1 = 0; round1 <= precision; fi+=step, round1++) {
+	for (let fi = 0, round1 = 0; round1 <= precision; fi += step, round1++) {
 		x = pos.x + radius * Math.cos(fi);// * Math.cos(0) == 1
 		y = pos.y + radius * Math.sin(fi);// * Math.cos(0) == 1
 		z = pos.z;// + radius * Math.sin(0) -> +0
 		vertices.push(x, y, z);
-		for (let psi = step, round2 = 1; round2 < 2*precision; psi+=step, round2++) {
+		for (let psi = step, round2 = 1; round2 < 2 * precision; psi += step, round2++) {
 			x = pos.x + radius * Math.cos(fi) * Math.cos(psi);
 			y = pos.y + radius * Math.sin(fi) * Math.cos(psi);
 			z = pos.z + radius * Math.sin(psi);
@@ -707,9 +707,9 @@ Utils.Sphere.prototype.createColors = function(count, color, random) {
 Utils.Sphere.prototype.createNormals = function(pos, vertices) {
 	let normals = [];
 	let pom = [];
-	for (let i = 0; i < vertices.length; i+=3) {
+	for (let i = 0; i < vertices.length; i += 3) {
 		pom = Utils.convert(
-			new Vec3D(vertices[i]-pos.x, vertices[i+1]-pos.y, vertices[i+2]-pos.z).normalized()
+			new Vec3D(vertices[i] - pos.x, vertices[i + 1] - pos.y, vertices[i + 2] - pos.z).normalized()
 		);
 		normals.push(pom[0], pom[1], pom[2]);
 	}
@@ -838,13 +838,14 @@ Utils.getDataFromJSON = function(url, callback) {
 /**
  * Function for loading data from text file with AJAX
  * @param  {string}   url      address of file
- * @param  {Function} callback function to call after loading is complete; called with received data
+ * @param  {Function} callback function to call after loading is complete; called with the received data
  * @since 2.1
  */
 Utils.getDataFromFile = function(url, callback) {
-	var _404 = false,
-		unknown_error = false,
-		http_request = new XMLHttpRequest();
+	let _404 = false;
+	let unknown_error = false;
+	const http_request = new XMLHttpRequest();
+
 	http_request.open("GET", url, true);
 	http_request.onreadystatechange = function() {
 		// http_request.readyState
@@ -868,7 +869,7 @@ Utils.getDataFromFile = function(url, callback) {
 };
 
 /**
- * Replacing Czech decimal comma with decimal point making it a number
+ * Replacing decimal comma with decimal point to make it a number
  * @param  {String} number input from a form
  * @return {number}        number
  */
@@ -880,7 +881,7 @@ Utils.replaceComma = function(number) {
  * Helper function for loading textures
  * @param  {WebGLRenderingContext} gl WebGL context
  * @param  {Array} urls               array with URLs of textures to load
- * @param  {Function} callback        function to call after loading of all textures is complete, gets array with textures
+ * @param  {Function} callback        function to call after loading of all textures is complete, called with the array of loaded textures
  */
 Utils.loadTexture = function(gl, urls, callback) {
 	let result = [];
@@ -893,7 +894,6 @@ Utils.loadTexture = function(gl, urls, callback) {
 	};
 
 	for (let i = 0; i < urls.length; i++) {
-
 		result[i] = gl.createTexture();
 		result[i].image = new Image();
 		result[i].image.crossOrigin = "anonymous";
@@ -950,9 +950,9 @@ Utils.initFullscreen = function(element, startFullscreen, exitFullscreen) {
 };
 
 /**
- * Preparation cursor locking on given element
+ * Preparation of cursor locking on given element
  * @see {@link https://developer.mozilla.org/en-US/docs/WebAPI/Pointer_Lock}
- * @param  {HTMLElement} element       element, which is going to have locked cursor
+ * @param  {HTMLElement} element       element which is going to have locked cursor
  * @param  {Function} startPointerLock function to call on successful locking cursor
  * @param  {Function} exitPointerLock  function to call when cursor has been unlocked
  */
@@ -1043,11 +1043,11 @@ Utils.Axis.init = function(gl) {
 	this.dataBuffer.itemSize = 6;
 
 	this.step = Float32Array.BYTES_PER_ELEMENT;//4
-	this.stride = this.dataBuffer.itemSize*this.step;//(3+3)*step
+	this.stride = this.dataBuffer.itemSize * this.step;//(3+3)*step
 };
 
 /**
- * Draw axis, has to be called after initialization
+ * Draw axis. It has to be called after initialization.
  * @param  {WebGLRenderingContext} gl WebGL context
  * @param  {Float32Array} modelview   array of 16 items (originally 4x4 matrix)
  * @param  {Float32Array} projection  array of 16 items (originally 4x4 matrix)
@@ -1057,7 +1057,7 @@ Utils.Axis.draw = function(gl, modelview, projection) {
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.dataBuffer);
 	gl.vertexAttribPointer(this.axisProgram.axisPosition, 3, gl.FLOAT, false, this.stride, 0);
-	gl.vertexAttribPointer(this.axisProgram.axisColor, 3, gl.FLOAT, false, this.stride, this.step*3);
+	gl.vertexAttribPointer(this.axisProgram.axisColor, 3, gl.FLOAT, false, this.stride, this.step * 3);
 
 	gl.uniformMatrix4fv(this.axisProgram.axisProjection, false, projection);
 	gl.uniformMatrix4fv(this.axisProgram.axisModelView, false, modelview);
