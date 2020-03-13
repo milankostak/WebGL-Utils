@@ -6,7 +6,7 @@
  * It intentionally doesn't support anything that wouldn't work with used syntax.
  * @type {Object}
  * @author Milan Košťák
- * @version 2.1.3 (2020/03/08)
+ * @version 2.2.0 (2020/03/13)
  * @requires transforms.js
  */
 const Utils = {};
@@ -245,7 +245,7 @@ Utils.Scene.prototype.add = function(obj) {
  * @param {number} posy  position of the center of the block
  * @param {number} posz  position of the center of the block
  * @param {Object} args  additional arguments
- *                       - color {Array} color as array (of usually three items); if undefined then RGB block
+ *                       - color {(number)[]} color as array (of usually three items); if undefined then RGB block
  *                       - sharedVertices {boolean} if there should be separate vertices for every face (false),
  *                                                  or if faces can share them (true, default value)
  *                                                  if vertices are shared, then normals and texture coordinates are not generated
@@ -273,7 +273,7 @@ Utils.Block = function(a, b, c, posx, posy, posz, args) {
  * @param  {number} y               position of the center of the block
  * @param  {number} z               position of the center of the block
  * @param  {boolean} sharedVertices if faces are sharing vertices (more info in constructor)
- * @return {Array}                  array with vertices
+ * @return {(number)[]}             array with vertices
  */
 Utils.Block.prototype.createVertices = function(a, b, c, x, y, z, sharedVertices) {
 	let vertices = [];
@@ -342,13 +342,13 @@ Utils.Block.prototype.createVertices = function(a, b, c, x, y, z, sharedVertices
 
 /**
  * Generate colors for block
- * @param  {Array} color            color as array; if undefined then RGB block
+ * @param  {(number)[]} color       color as array; if undefined then RGB block
  * @param  {boolean} sharedVertices if colors should be generated for block with shared vertices (more info in constructor)
- * @return {Array}                  array with colors
+ * @return {(number)[]}             array with colors
  */
 Utils.Block.prototype.createColors = function(color, sharedVertices) {
 	let colors = [];
-	// if color was set then copy it to every vertice
+	// if color was set then copy it to every vertex
 	if (color !== undefined) {
 		// copy one colors to all vertices
 		let max = (sharedVertices) ? 8 : 24;
@@ -417,7 +417,7 @@ Utils.Block.prototype.createColors = function(color, sharedVertices) {
 /**
  * Generate texture coordinates for block, called only when block does not have shared vertices
  * @since 2.0
- * @return {Array} array with texture coords, always the same array
+ * @return {(number)[]} array with texture coords, always the same array
  */
 Utils.Block.prototype.createTextureCoords = function() {
 	return [
@@ -456,7 +456,7 @@ Utils.Block.prototype.createTextureCoords = function() {
 /**
  * Generate indices for block
  * @param  {boolean} sharedVertices if block has shared vertices (more info in constructor)
- * @return {Array}                  array with indices, always the same regarding the sharedVertices parameter
+ * @return {(number)[]}             array with indices, always the same regarding the sharedVertices parameter
  */
 Utils.Block.prototype.createIndices = function(sharedVertices) {
 	if (sharedVertices) {
@@ -500,7 +500,7 @@ Utils.Block.prototype.createIndices = function(sharedVertices) {
  * @param {number} y     position of the center of the face
  * @param {number} z     position of the center of the face
  * @param {Object} args  additional arguments
- *                       - color {Array}  color as array; if undefined then RGB
+ *                       - color {(number)[]} color as array; if undefined then RGB
  *                       - strip {boolean} if indices should be generated for drawing as a triangle strip (true is default)
  *                       - orientation {Mat3} rotation matrix describing rotation over face center (default Mat3Identity)
  * @constructor
@@ -519,13 +519,13 @@ Utils.Face = function(a, b, x, y, z, args) {
 
 /**
  * Generate vertices for face
- * @param  {number} a side length
- * @param  {number} b side length
- * @param  {number} x position of the center of the face
- * @param  {number} y position of the center of the face
- * @param  {number} z position of the center of the face
- * @param  {Mat3} or  rotation matrix describing rotation over face center (default Mat3Identity)
- * @return {Array}    array with vertices
+ * @param  {number} a   side length
+ * @param  {number} b   side length
+ * @param  {number} x   position of the center of the face
+ * @param  {number} y   position of the center of the face
+ * @param  {number} z   position of the center of the face
+ * @param  {Mat3} or    rotation matrix describing rotation over face center (default Mat3Identity)
+ * @return {(number)[]} array with vertices
  */
 Utils.Face.prototype.createVertices = function(a, b, x, y, z, or) {
 
@@ -549,8 +549,8 @@ Utils.Face.prototype.createVertices = function(a, b, x, y, z, or) {
 
 /**
  * Generate colors for face
- * @param  {number} color color as an array; if undefined then RGB
- * @return {Array}        array with colors
+ * @param  {number[]} color color as an array; if undefined then RGB
+ * @return {(number)[]}     array with colors
  */
 Utils.Face.prototype.createColors = function(color) {
 	let colors = [];
@@ -576,7 +576,7 @@ Utils.Face.prototype.createColors = function(color) {
 /**
  * Generate texture coordinates for face
  * @since 2.0
- * @return {Array} array with texture coords, always the same array
+ * @return {(number)[]} array with texture coords, always the same array
  */
 Utils.Face.prototype.createTextureCoords = function() {
 	return [
@@ -589,16 +589,16 @@ Utils.Face.prototype.createTextureCoords = function() {
 
 /**
  * Generate normals for face
- * @param  {Vec3D} pos      position of the center
- * @param  {Array} vertices vertices array
- * @return {Array}          array with normals
+ * @param  {Vec3D} pos   position of the center
+ * @param  {(number)[]}  vertices vertices array
+ * @return {(number)[]}  array with normals
  */
 Utils.Face.prototype.createNormals = function(pos, vertices) {
 	let normals = [];
 	let pom = [];
-	for (let i = 0; i < vertices.length; i+=3) {
+	for (let i = 0; i < vertices.length; i += 3) {
 		pom = Utils.convert(
-			new Vec3D(vertices[i]-pos.x, vertices[i+1]-pos.y, vertices[i+2]-pos.z).normalized()
+			new Vec3D(vertices[i] - pos.x, vertices[i + 1] - pos.y, vertices[i + 2] - pos.z).normalized()
 		);
 		normals.push(pom[0], pom[1], pom[2]);
 	}
@@ -608,7 +608,7 @@ Utils.Face.prototype.createNormals = function(pos, vertices) {
 /**
  * Generate indices for face
  * @param  {boolean} strip if face is going to be drawn with triangle strip
- * @return {Array}         array with indices
+ * @return {(number)[]}    array with indices
  */
 Utils.Face.prototype.createIndices = function(strip) {
 	if (strip) {
@@ -630,7 +630,7 @@ Utils.Face.prototype.createIndices = function(strip) {
  *                           the higher the number is the more the "sphere" looks like an actual sphere
  *                           if equals 2 then it creates regular octahedron
  * @param {Object} args      additional arguments
- *                           - color {Array} color of sphere (default white [1, 1, 1])
+ *                           - color {(number)[]} color of sphere (default white [1, 1, 1])
  *                           - strip {boolean} if indices should be generated for triangle strip (default true)
  *                           - randomColor {boolean} if true then colors are going to be random for every vertice (default false)
  * @constructor
@@ -654,7 +654,7 @@ Utils.Sphere = function(posx, posy, posz, radius, precision, args) {
  * @param  {Vec3D} pos        position of the center
  * @param  {number} radius    radius of sphere
  * @param  {number} precision number of steps
- * @return {Array}            array with vertices
+ * @return {(number)[]}       array with vertices
  */
 Utils.Sphere.prototype.createVertices = function(pos, radius, precision) {
 	let step = Math.PI / precision;
@@ -677,10 +677,10 @@ Utils.Sphere.prototype.createVertices = function(pos, radius, precision) {
 
 /**
  * Generate colors for sphere
- * @param  {number} count   number of vertices the sphere has
- * @param  {Array} color    array with colors; ignored if (random === true)
- * @param  {boolean} random if color should be random for every vertex
- * @return {Array}          array with colors
+ * @param  {number} count      number of vertices the sphere has
+ * @param  {(number)[]} color  array with colors; ignored if (random === true)
+ * @param  {boolean} random    if color should be random for every vertex
+ * @return {(number)[]}        array with colors
  */
 Utils.Sphere.prototype.createColors = function(count, color, random) {
 	let colors = [];
@@ -700,9 +700,9 @@ Utils.Sphere.prototype.createColors = function(count, color, random) {
 
 /**
  * Generate normals for sphere
- * @param  {Vec3D} pos      position of the center
- * @param  {Array} vertices array of vertices
- * @return {Array}          array with normals
+ * @param  {Vec3D} pos           position of the center
+ * @param  {(number)[]} vertices array of vertices
+ * @return {(number)[]}          array with normals
  */
 Utils.Sphere.prototype.createNormals = function(pos, vertices) {
 	let normals = [];
@@ -719,21 +719,21 @@ Utils.Sphere.prototype.createNormals = function(pos, vertices) {
 /**
  * Generate texture coordinates for sphere
  * @param  {number} precision number of steps
- * @return {Array}         	  array with texture coordinates
+ * @return {(number)[]}       array with texture coordinates
  */
 Utils.Sphere.prototype.createTextureCoords = function(precision) {
 	let texCoords = [];
 	//precision == 4
-	let n = 1/(precision*2);//0.125
-	let n2 = n*2;//0.25
+	let n = 1 / (precision * 2);//0.125
+	let n2 = n * 2;//0.25
 	for (let i = 0; i <= precision; i++) {
 		//0, 0.5, 0, 0.25, 0, 0,
 		//0.125, 0.5, 0.125, 0.25, 0.125, 0,
 		//0.25, 0.5, 0.25, 0.25, 0.25, 0,
 		//0.375, 0.5, 0.375, 0.25, 0.375, 0,
 		//0.5, 0.5, 0.5, 0.25, 0.5, 0,
-		for (let j = 0; j < precision/2+1; j++) {
-			texCoords.push(n*i, 0.5-j*n2);
+		for (let j = 0; j < precision / 2 + 1; j++) {
+			texCoords.push(n * i, 0.5 - j * n2);
 		}
 		//0.5, 0.25, 0.5, 0.5, 0.5, 0.75, 0.5, 1,
 		//0.625, 0.25, 0.625, 0.5, 0.625, 0.75, 0.625, 1,
@@ -741,15 +741,15 @@ Utils.Sphere.prototype.createTextureCoords = function(precision) {
 		//0.875, 0.25, 0.875, 0.5, 0.875, 0.75, 0.875, 1,
 		//1, 0.25, 1, 0.5, 1, 0.75, 1, 1,
 		for (let j = 0; j < precision; j++) {
-			texCoords.push(0.5+n*i, (j+1)*n2);
+			texCoords.push(0.5 + n * i, (j + 1) * n2);
 		}
 		//0, 0.75,
 		//0.125, 0.75,
 		//0.25, 0.75,
 		//0.375, 0.75,
 		//0.5, 0.75
-		for (let j = 0; j < precision/2-1; j++) {
-			texCoords.push(n*i, 1-(j+1)*n2);
+		for (let j = 0; j < precision / 2 - 1; j++) {
+			texCoords.push(n * i, 1 - (j + 1) * n2);
 		}
 	}
 	return texCoords;
@@ -759,38 +759,38 @@ Utils.Sphere.prototype.createTextureCoords = function(precision) {
  * Generate indices for sphere
  * @param  {number} precision number of steps
  * @param  {boolean} strip    if true then triangle strip, regular triangle otherwise
- * @return {Array}            array with indices
+ * @return {(number)[]}       array with indices
  */
 Utils.Sphere.prototype.createIndices = function(precision, strip) {
-	let n = precision*2;
+	let n = precision * 2;
 	let n2 = precision;
 	let indices = [];
 	let i, j, p, b;
 	if (strip) {
 		indices.push(n);
 		for (i = 0; i < n2; i++) {
-			p = i*n;
+			p = i * n;
 			if (i !== 0) {
 				indices.push(p, p);
 			}
 			// from start to top
-			for (j = 0; j < n/4; j++) {
-				indices.push(j+n+p, j+p);
+			for (j = 0; j < n / 4; j++) {
+				indices.push(j + n + p, j + p);
 			}
 			// from top down
-			for (j = n/4; j <= 3*n/4; j++) {
-				indices.push(j+p, j+n+p);
+			for (j = n / 4; j <= 3 * n / 4; j++) {
+				indices.push(j + p, j + n + p);
 			}
 			// from down to zero
-			for (j = 3*n/4; j < n; j++) {
-				indices.push(j+n+p, j+p);
+			for (j = 3 * n / 4; j < n; j++) {
+				indices.push(j + n + p, j + p);
 			}
 			// close to zero
-			indices.push(n+p, p);
+			indices.push(n + p, p);
 		}
 
-		b = n*(n2-1);
-		indices.push(b,b);// preparation for strip continuation
+		b = n * (n2 - 1);
+		indices.push(b, b);// preparation for strip continuation
 	}
 	// regular triangles not strip
 	else {
@@ -837,9 +837,9 @@ Utils.getDataFromJSON = function(url, callback) {
 
 /**
  * Function for loading data from text file with AJAX
+ * @since 2.1
  * @param  {string}   url      address of file
  * @param  {Function} callback function to call after loading is complete; called with the received data
- * @since 2.1
  */
 Utils.getDataFromFile = function(url, callback) {
 	let _404 = false;
@@ -858,10 +858,10 @@ Utils.getDataFromFile = function(url, callback) {
 		if (http_request.readyState === 4 && http_request.status === 200) {
 			callback(http_request.responseText);
 		} else if (http_request.status === 404) {
-			if (!_404) window.alert("File \""+url+"\" was not found (404)!");
+			if (!_404) window.alert("File \"" + url + "\" was not found (404)!");
 			_404 = true;
 		} else if (http_request.status !== 200 && http_request.status !== 404) {
-			if (!unknown_error) window.alert("An error occured when laoding file \""+url+"\"!");
+			if (!unknown_error) window.alert("An error occured when laoding file \"" + url + "\"!");
 			unknown_error = true;
 		}
 	};
@@ -869,7 +869,7 @@ Utils.getDataFromFile = function(url, callback) {
 };
 
 /**
- * Replacing decimal comma with decimal point to make it a number
+ * Replace decimal comma with decimal point to make it a number
  * @param  {String} number input from a form
  * @return {number}        number
  */
@@ -878,9 +878,39 @@ Utils.replaceComma = function(number) {
 };
 
 /**
+ * Replace decimal point with a decimal comma. Returns string.
+ * @since 2.2.0
+ * @param {number}   number
+ * @returns {String} string with a decimal comma
+ */
+Utils.replaceDecimalPoint = function(number) {
+	return String(number).replace(".", ",");
+};
+
+/**
+ * Convert number in degrees to radians
+ * @since 2.2.0
+ * @param  {number} degrees number in degrees
+ * @return {number}         number in radians
+ */
+Utils.toRadians = function(degrees) {
+	return degrees * Math.PI / 180;
+};
+
+/**
+ * Convert number in radians to degrees
+ * @since 2.2.0
+ * @param  {number} radians number in radians
+ * @return {number}         number in degrees
+ */
+Utils.toDegrees = function(radians) {
+	return radians / Math.PI * 180;
+};
+
+/**
  * Helper function for loading textures
  * @param  {WebGLRenderingContext} gl WebGL context
- * @param  {Array} urls               array with URLs of textures to load
+ * @param  {(String)[]} urls          array with URLs of textures to load
  * @param  {Function} callback        function to call after loading of all textures is complete, called with the array of loaded textures
  */
 Utils.loadTexture = function(gl, urls, callback) {
@@ -889,7 +919,7 @@ Utils.loadTexture = function(gl, urls, callback) {
 	let loaded = 0;
 
 	let onload = function() {
-		window.console.log("Texture \""+this.src+"\" loaded.");
+		window.console.log('Texture "' + this.src + '" loaded.');
 		loaded++;
 	};
 
