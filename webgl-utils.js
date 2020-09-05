@@ -6,7 +6,7 @@
  * It intentionally doesn't support anything that wouldn't work with used syntax.
  * @type {Object}
  * @author Milan Košťák
- * @version 2.2.0 (2020/03/13)
+ * @version 2.2.1 (2020/09/05)
  * @requires transforms.js
  */
 const Utils = {};
@@ -65,10 +65,10 @@ Utils.initRequestAnimationFrame = function(fps) {
  */
 Utils.initShaders = function(gl, program, vsId, fsId, file) {
 	let initShader = function(id, type, file) {
-		let shader = gl.createShader(type);
+		const shader = gl.createShader(type);
 		let value;
 		if (file) {
-			let request = new XMLHttpRequest();
+			const request = new XMLHttpRequest();
 			request.open('GET', id, false);
 			try {
 				request.send(null);
@@ -105,7 +105,7 @@ Utils.initShaders = function(gl, program, vsId, fsId, file) {
 		}
 	};
 	// check FS even if VS compilation failed (so it shows errors for both at once)
-	let result = (initShader(vsId, gl.VERTEX_SHADER, file)) & (initShader(fsId, gl.FRAGMENT_SHADER, file));
+	const result = (initShader(vsId, gl.VERTEX_SHADER, file)) & (initShader(fsId, gl.FRAGMENT_SHADER, file));
 	if (!result) {
 		throw new SyntaxError("Shader syntax error.");
 	} else {
@@ -351,7 +351,7 @@ Utils.Block.prototype.createColors = function(color, sharedVertices) {
 	// if color was set then copy it to every vertex
 	if (color !== undefined) {
 		// copy one colors to all vertices
-		let max = (sharedVertices) ? 8 : 24;
+		const max = (sharedVertices) ? 8 : 24;
 		for (let i = 0; i < max; i++) {
 			for (let j = 0; j < color.length; j++) {
 				colors.push(color[j]);
@@ -530,13 +530,13 @@ Utils.Face = function(a, b, x, y, z, args) {
 Utils.Face.prototype.createVertices = function(a, b, x, y, z, or) {
 
 	//bottom, left
-	let point1 = new Vec3D(-a, -b, 0).mul(or);
+	const point1 = new Vec3D(-a, -b, 0).mul(or);
 	//bottom, right
-	let point2 = new Vec3D(a, -b, 0).mul(or);
+	const point2 = new Vec3D(a, -b, 0).mul(or);
 	//top, left
-	let point3 = new Vec3D(-a, b, 0).mul(or);
+	const point3 = new Vec3D(-a, b, 0).mul(or);
 	//top, right
-	let point4 = new Vec3D(a, b, 0).mul(or);
+	const point4 = new Vec3D(a, b, 0).mul(or);
 
 	let vertices = [];
 	vertices.push(point1.x + x, point1.y + y, point1.z + z);
@@ -724,8 +724,8 @@ Utils.Sphere.prototype.createNormals = function(pos, vertices) {
 Utils.Sphere.prototype.createTextureCoords = function(precision) {
 	let texCoords = [];
 	//precision == 4
-	let n = 1 / (precision * 2);//0.125
-	let n2 = n * 2;//0.25
+	const n = 1 / (precision * 2);//0.125
+	const n2 = n * 2;//0.25
 	for (let i = 0; i <= precision; i++) {
 		//0, 0.5, 0, 0.25, 0, 0,
 		//0.125, 0.5, 0.125, 0.25, 0.125, 0,
@@ -762,8 +762,8 @@ Utils.Sphere.prototype.createTextureCoords = function(precision) {
  * @return {(number)[]}       array with indices
  */
 Utils.Sphere.prototype.createIndices = function(precision, strip) {
-	let n = precision * 2;
-	let n2 = precision;
+	const n = precision * 2;
+	const n2 = precision;
 	let indices = [];
 	let i, j, p, b;
 	if (strip) {
@@ -861,7 +861,7 @@ Utils.getDataFromFile = function(url, callback) {
 			if (!_404) window.alert("File \"" + url + "\" was not found (404)!");
 			_404 = true;
 		} else if (http_request.status !== 200 && http_request.status !== 404) {
-			if (!unknown_error) window.alert("An error occured when laoding file \"" + url + "\"!");
+			if (!unknown_error) window.alert("An error occurred when loading file \"" + url + "\"!");
 			unknown_error = true;
 		}
 	};
@@ -915,7 +915,7 @@ Utils.toDegrees = function(radians) {
  */
 Utils.loadTexture = function(gl, urls, callback) {
 	let result = [];
-	let total = urls.length;
+	const total = urls.length;
 	let loaded = 0;
 
 	let onload = function() {
