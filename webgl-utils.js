@@ -6,7 +6,7 @@
  * It intentionally doesn't support anything that wouldn't work with used syntax.
  * @type {Object}
  * @author Milan Košťák
- * @version 2.2.1 (2020/09/05)
+ * @version 2.3.0 (2020/09/06)
  * @requires transforms.js
  */
 const Utils = {};
@@ -111,6 +111,83 @@ Utils.initShaders = function(gl, program, vsId, fsId, file) {
 	} else {
 		return true;
 	}
+};
+
+/**
+ * Function for initialization of a shader for compute program
+ * @since 2.3.0
+ * @param  {WebGL2ComputeRenderingContext} gl WebGL context
+ * @param  {WebGLProgram} program    		  WebGL program
+ * @param  {string} file              		  path to a file with the compute shader
+ * @return {boolean}                  		  true if compilation was successful else it throws exception
+ * @throws {SyntaxError}              		  If compilation of shaders failed or shaders were not found
+ */
+Utils.initComputeShader = function(gl, program, file) {
+	const shader = gl.createShader(gl.COMPUTE_SHADER);
+	let value;
+	const request = new XMLHttpRequest();
+	request.open('GET', file, false);
+	try {
+		request.send(null);
+		if (request.readyState === 4 && request.status === 200) {
+			value = request.responseText;
+		}
+	} catch (e) {}
+
+	if (!value) {
+		const x = "Utils.initComputeShader: Compute shader was not found! Requested file '" + id + "' was not found.";
+		window.alert(x);
+		throw new Error(x);
+	}
+	gl.shaderSource(shader, value);
+	gl.compileShader(shader);
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		const x = "Compute shader error\n" + gl.getShaderInfoLog(shader);
+		window.alert(x);
+		window.console.log(x);
+		return false;
+	} else {
+		gl.attachShader(program, shader);
+		return true;
+	}
+};
+
+/**
+ * Get access to camera
+ * @since 2.3.0
+ * @see More info: {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia}
+ * @param {HTMLVideoElement} video
+ * @param {number} width
+ * @param {number} height
+ * @param {string} facingMode
+ * @param {HTMLElement} errorElement
+ */
+Utils.getCamera = function(video, width, height, facingMode, errorElement) {
+	navigator.mediaDevices.getUserMedia({
+		audio: false,
+		video: {width: width, height: height, facingMode: facingMode}
+		/*video: {
+			width: { min: 720, ideal: 1024, max: 1280 },
+			height: { min: 540, max: 720 },
+			//prefer rear camera
+			facingMode: "environment"
+		}*/
+	}).then((stream) => {
+		video.srcObject = stream;
+	}).catch((error) => {
+		let msg;
+		if (error.name === "ConstraintNotSatisfiedError" || error.name === "NotFoundError") {
+			msg = "Your camera does not meet required resolution for this application to work.";
+		} else if (error.name === "TrackStartError") {
+			msg = "Your camera is probably used by different application at this time.";
+		} else {
+			msg = "There was an unknown error when accessing your camera.\nError message:\n" + error;
+		}
+		if (errorElement !== undefined) errorElement.innerHTML = msg;
+		alert(msg);
+		console.log("%cVideo Error: " + error, 'color: red');
+		console.log(msg);
+	});
 };
 
 /**
